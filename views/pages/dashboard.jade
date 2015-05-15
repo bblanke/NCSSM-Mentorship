@@ -1,0 +1,51 @@
+section(layout="row" flex)
+  md-sidenav.md-sidenav-left.md-whiteframe-z2(md-component-id="left")
+    md-toolbar
+      .md-toolbar-tools 
+        h2
+          span Menu
+        span(flex)
+        md-button.md-icon-button(aria-label="Close Menu" ng-click="closeNav('left')")
+          md-icon(md-svg-icon="navigation:chevron_left")
+    md-content
+      md-list
+        md-subheader.md-no-sticky Pages
+        md-list-item(ng-click="navigateTo('dashboard')")
+          p Dashboard
+        md-list-item(ng-click="navigateTo('dashboard.assignments')")
+          p Assignments
+        md-list-item(ng-click="navigateTo('dashboard.mail')")
+          p Mail
+        md-subheader.md-no-sticky Manage Data
+        md-list-item(ng-click="navigateTo('dashboard.users')")
+          p Users
+        md-list-item(ng-click="navigateTo('dashboard.mentors')")
+          p Mentors
+  md-content(flex)
+    md-toolbar
+      .md-toolbar-tools
+        md-button.md-icon-button(aria-label="Menu" ng-click="openNav('left')")
+          md-icon(md-svg-icon="navigation:menu")
+        h2
+          span {{pageTitle}}
+        span(flex)
+        md-button.md-icon-button(aria-label="Settings")
+          md-icon(md-svg-icon="navigation:more_vert" ng-click="openNav('right')")
+  md-sidenav.md-sidenav-right.md-whiteframe-z2(md-component-id="right")
+    md-toolbar
+      .md-toolbar-tools 
+        md-button.md-icon-button(aria-label="Close Menu" ng-click="closeNav('right')")
+          md-icon(md-svg-icon="navigation:chevron_right")
+        span(flex)
+        h2
+          span Settings
+    md-content
+      md-list
+        md-list-item(ng-click="navigateTo('dashboard.assignments')")
+          p Help
+        md-list-item(ng-click="navigateTo('dashboard.mail')")
+          p Account Settings
+        md-list-item(ng-click="logOut()")
+          p Log Out
+section(layout="row" layout-align="center")
+  ui-view(flex)

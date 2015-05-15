@@ -1,0 +1,20 @@
+angular.module('mentorship')
+  .config(['$mdIconProvider', function($mdIconProvider) {
+    $mdIconProvider
+        .iconSet('action', 'images/iconsets/action-icons.svg', 24)
+        .iconSet('alert', 'images/iconsets/alert-icons.svg', 24)
+        .iconSet('av', 'images/iconsets/av-icons.svg', 24)
+        .iconSet('communication', 'images/iconsets/communication-icons.svg', 24)
+        .iconSet('content', 'images/iconsets/content-icons.svg', 24)
+        .iconSet('device', 'images/iconsets/device-icons.svg', 24)
+        .iconSet('editor', 'images/iconsets/editor-icons.svg', 24)
+        .iconSet('file', 'images/iconsets/file-icons.svg', 24)
+        .iconSet('hardware', 'images/iconsets/hardware-icons.svg', 24)
+        .iconSet('icons', 'images/iconsets/icons-icons.svg', 24)
+        .iconSet('image', 'images/iconsets/image-icons.svg', 24)
+        .iconSet('maps', 'images/iconsets/maps-icons.svg', 24)
+        .iconSet('navigation', 'images/iconsets/navigation-icons.svg', 24)
+        .iconSet('notification', 'images/iconsets/notification-icons.svg', 24)
+        .iconSet('social', 'images/iconsets/social-icons.svg', 24)
+        .iconSet('toggle', 'images/iconsets/toggle-icons.svg', 24)
+}]);

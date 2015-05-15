@@ -1,0 +1,55 @@
+div.height-full(layout="column" layout-align="center")
+  div(layout="column" layout-align="center center")
+    h1.md-display-3.tc-white(class="mb-") Mentorship
+    h3.tc-white.md-subhead
+      | A research program at 
+      a.tc-accent(href="http://ncssm.edu") NCSSM
+      |.
+  div(layout="row" layout-align="center")
+    md-content.md-whiteframe-z1(flex-gt-lg="30" flex-lg="40" flex-md="60" flex-sm="90")
+      md-tabs.md-accent(md-dynamic-height md-stretch-tabs="always")
+        md-tab(label="sign in")
+          md-content.md-padding(layout="row" layout-align="center center")
+            md-button.md-raised.md-primary(ng-click="openGoogle()") Sign in with Google
+        md-tab(label="register")
+          md-content.md-padding(layout="column" layout-align="center center")
+            md-button.md-raised.md-primary(ng-click="openGoogle()" ng-hide="dataArrived") Link Google Account
+            form(ng-show="dataArrived" layout="column" layout-align="center")
+              md-content(layout="column" layout-padding)
+                md-input-container
+                  md-select(placeholder="I am a..." ng-model="type")
+                    md-option(value="student") Student
+                    md-option(value="mentor") Mentor
+                    md-option(value="staff") Staff Member
+              md-content(layout="column" layout-padding ng-hide="type==null")
+                md-input-container
+                  label Given Name
+                  input(type="text" ng-model="givenName" required)
+                md-input-container
+                  label Preferred Name
+                  input(type="text" ng-model="preferredName" required)
+                md-input-container
+                  label Email
+                  input(type="email" ng-model="email" required)
+              md-content(layout="row" layout-padding layout-sm="column" ng-hide="type==null")
+                md-input-container
+                  label Cell Phone
+                  input(type="text" ng-model="phone" mask="(999) 999-9999" clean required)
+                md-input-container
+                  label Campus Address
+                  input(type="text" ng-model="address")
+              md-content(layout="row" layout-padding layout-sm="column" required ng-show="type==='student'")
+                md-input-container
+                  label Class
+                  input(type="text" ng-model="class" ng-required="type==='student'")
+                md-input-container
+                  label Birthdate (yyyy/mm/dd)
+                  input(type="date" ng-model="birthdate" ng-required="type==='student'")
+              md-button.md-raised.md-primary(ng-click="registerUser()") Register
+              
+  div(layout="row" layout-align="center end")
+    h3.md-subhead.tc-white
+      | Built by 
+      a.tc-accent(href="http://baileyb.me") Bailey Blankenship
+      |.
+                
