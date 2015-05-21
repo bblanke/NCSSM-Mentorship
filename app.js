@@ -5,8 +5,6 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-var session = require('express-session');
-var morgan = require('morgan');
 
 //Database
 var configDB = require('./config/database');
@@ -14,10 +12,6 @@ mongoose.connect(configDB.url);
 
 require('./models/Users');
 var User = mongoose.model('User');
-
-//Login
-var passport = require('passport');
-//require('./config/passport')(passport);
 
 var passwords = require('./config/passwords');
 
@@ -32,17 +26,16 @@ app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
-
-app.use(morgan('dev'));
+app.use(function(req,res,next){
+  console.log(req.headers);
+  next();
+});
+app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/bower_components', express.static(path.join(__dirname, 'bower_components')));
-
-app.use(session({ secret: passwords.sessionSecret }));
-app.use(passport.initialize());
-app.use(passport.session());
 
 app.use('/', api);
 app.use('/pages', pages);
