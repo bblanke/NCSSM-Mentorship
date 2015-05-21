@@ -17,34 +17,34 @@ div.height-full(layout="column" layout-align="center")
             form(ng-show="dataArrived" layout="column" layout-align="center")
               md-content(layout="column" layout-padding)
                 md-input-container
-                  md-select(placeholder="I am a..." ng-model="type")
+                  md-select(placeholder="I am a..." ng-model="accountType")
                     md-option(value="student") Student
                     md-option(value="mentor") Mentor
                     md-option(value="staff") Staff Member
-              md-content(layout="column" layout-padding ng-hide="type==null")
+              md-content(layout="column" layout-padding ng-hide="accountType==null")
                 md-input-container
                   label Given Name
-                  input(type="text" ng-model="givenName" required)
+                  input(type="text" ng-model="givenName" required disabled)
                 md-input-container
                   label Preferred Name
                   input(type="text" ng-model="preferredName" required)
                 md-input-container
                   label Email
-                  input(type="email" ng-model="email" required)
-              md-content(layout="row" layout-padding layout-sm="column" ng-hide="type==null")
+                  input(type="email" ng-model="email" required disabled)
+              md-content(layout="row" layout-padding layout-sm="column" ng-hide="accountType==null")
                 md-input-container
                   label Cell Phone
                   input(type="text" ng-model="phone" mask="(999) 999-9999" clean required)
                 md-input-container
                   label Campus Address
                   input(type="text" ng-model="address")
-              md-content(layout="row" layout-padding layout-sm="column" required ng-show="type==='student'")
+              md-content(layout="row" layout-padding layout-sm="column" ng-show="accountType==='student'")
                 md-input-container
                   label Class
-                  input(type="text" ng-model="class" ng-required="type==='student'")
+                  input(type="text" ng-model="class" ng-required="accountType==='student'" disabled)
                 md-input-container
                   label Birthdate (yyyy/mm/dd)
-                  input(type="date" ng-model="birthdate" ng-required="type==='student'")
+                  input(type="date" ng-model="birthdate" ng-required="accountType==='student'")
               md-button.md-raised.md-primary(ng-click="registerUser()") Register
               
   div(layout="row" layout-align="center end")

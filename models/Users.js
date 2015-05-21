@@ -7,17 +7,20 @@ var UserSchema = new mongoose.Schema({
   givenName: String,
   preferredName: String,
   email: String,
-  type: String,
+  accountType: String,
   class: Number,
   address: String,
   phone: String,
   birthdate: Date,
   token: String,
   googleId: String,
+  googleToken: String,
   image: String
 });
 
-UserSchema.methods.generateTokens = function(googleToken, lifetime, cb){
+
+UserSchema.methods.updateTokens = function(googleToken, lifetime, cb){
+  console.log('see, this shit works');
   var token = crypto.randomBytes(48).toString('hex');
   //lifetime is in seconds
   var now = new Date();
@@ -27,20 +30,25 @@ UserSchema.methods.generateTokens = function(googleToken, lifetime, cb){
     exp: exp
   }
   var payload = {
-    payload: auth.encrypt(JSON.stringify(tokenContainer)),
+    payload: auth.encrypt(JSON.stringify(tokenContainer), passwords.tokenKey),
     exp: exp
   }
   this.token = token;
-  this.googleToken = token;
+  this.googleToken = googleToken;
   this.save(cb);
   return payload;
 }
 
-UserSchema.static.decodeToken = function(payload, cb){
-  var decipher = crypto.createDecipher('aes-256-cbc', passwords.secretKey);
-  var tokenContainer = decipher.update(payload, 'base64', 'utf8') + decipher.final('utf8');
-  tokenContainer = JSON.parse(tokenContainer);
-  console.log(tokenContainer.token);
+UserSchema.statics.getUserFromHeader = function(header,req,cb){
+  payload = header.split(" ")[1];
+  tokenContainer = JSON.parse(auth.decrypt(payload,passwords.tokenKey));
+  this.findOne({'preferredName':'Bailey Blankenship'}, function(err,user){
+    if(err){return next(err);}
+    if(user){
+      req.currentUser = user;
+    }
+    cb();
+  });
 }
 
 

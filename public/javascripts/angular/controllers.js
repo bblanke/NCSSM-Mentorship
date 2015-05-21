@@ -1,5 +1,5 @@
 angular.module('mentorship')
-  .controller('PageController', ['$scope', 'socket', 'auth', function($scope, socket, auth){
+  .controller('AppCtrl', ['$scope', 'socket', 'auth', function($scope, socket, auth){
     $scope.colorBg = false;
   }])
   .controller('AccountCtrl', ['$scope', 'socket','auth', function($scope,socket,auth){
@@ -7,18 +7,19 @@ angular.module('mentorship')
     var authWindow;
     var socketId;
     var clientId = '115445966511-ogupss8jo9f6o75egqe5lo4tlvnmmrab.apps.googleusercontent.com';
+    var encrypted;
+
     $scope.registerUser = function(){
       auth.register({
-        givenName: $scope.givenName,
-        preferredName: $scope.preferredName,
-        email: $scope.email,
-        phone: $scope.phone,
-        class: $scope.class,
-        address: $scope.address,
-        type: $scope.class,
-        birthdate: $scope.birthdate,
-        googleId: $scope.googleId,
-        image: $scope.image
+        encrypted,
+        raw: {
+          preferredName: $scope.preferredName,
+          phone: $scope.phone,
+          address: $scope.address,
+          accountType: $scope.accountType,
+          birthdate: $scope.birthdate,
+          class: $scope.class
+        }
       });
     }
     $scope.openGoogle = function(){
@@ -28,25 +29,28 @@ angular.module('mentorship')
       socketId = data;
     });
     socket.on('userdata', function(data){
-      $scope.givenName = data.firstName + ' ' + data.lastName;
-      $scope.preferredName = data.displayName;
-      $scope.email = data.email;
-      $scope.class = "20" + data.email.match(/\d{2}/);
-      $scope.googleId = data.googleId;
+      //shift focus to register tab!
+      encrypted = data.encrypted;
+      var year = data.raw.email.match(/\d{2}/);
+      $scope.givenName = data.raw.firstName + ' ' + data.raw.lastName;
+      $scope.preferredName = data.raw.displayName;
+      $scope.email = data.raw.email;
+      $scope.class = year !== null ? "20" + year : null;
       $scope.dataArrived=true;
-      $scope.image = data.image;
       console.log('userdata received');
       authWindow.close();
     });
     socket.on('authPackage', function(data){
       auth.setToken(data);
+      console.log(data);
       console.log('authpackage received');
       authWindow.close();
     });
   }])
   .controller('DashCtrl', ['$scope', 'socket', '$mdSidenav', '$state', 'auth', function($scope,socket, $mdSidenav, $state, auth){
-    $scope.pageTitle = "Joke's on you; this is gonna be a page.";
+    $scope.pageTitle = "Joke's on you! This is gonna be a page.";
     $scope.$parent.colorBg = false;
+    $scope.me = auth.me;
     $scope.openNav = function(nav){
       $mdSidenav(nav).open();
     }
@@ -66,4 +70,16 @@ angular.module('mentorship')
     $scope.removeUser = function(user){
       users.delete(user);
     }
+  }])
+  .controller('MentorsCtrl', ['$scope', function($scope){
+    $scope.$parent.pageTitle = "Mentors";
+  }])
+  .controller('AssignmentsCtrl', ['$scope', function($scope){
+    $scope.$parent.pageTitle = "Assignments";
+  }])
+  .controller('MailCtrl', ['$scope', function($scope){
+    $scope.$parent.pageTitle = "Mail";
+  }])
+  .controller('ImportCtrl', ['$scope', function($scope){
+    $scope.$parent.pageTitle = "Import Data";
   }]);
