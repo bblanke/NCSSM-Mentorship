@@ -106,11 +106,11 @@ router.route('/users/:user')
       res.sendStatus(200);
     });
   });
-/*router.route('/users/me')
+router.route('/users/me')
   .get(function(req,res,next){
-    console.log("current users " + res.locals.top);
+    console.log("current user: " + req.currentUser);
     res.send(req.currentUser);
-  });*/
+  });
 
 module.exports = router;
 

@@ -29,9 +29,8 @@ angular.module('mentorship')
       tokenExp: "",
     };
     auth.getMe = function(){
-      $http.get('/users/me').success(function(data){
-        console.log('me: '+data);
-        return auth.me = data;
+      return $http.get('/users/me').success(function(data){
+        console.log('me: '+JSON.stringify(data));
       });
     }
     auth.initializeToken = function(){

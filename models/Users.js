@@ -19,6 +19,7 @@ var UserSchema = new mongoose.Schema({
 });
 
 UserSchema.methods.updateTokens = function(googleToken, lifetime, cb){
+  console.log('see, this shit works');
   var token = crypto.randomBytes(48).toString('hex');
   //lifetime is in seconds
   var now = new Date();
@@ -28,7 +29,7 @@ UserSchema.methods.updateTokens = function(googleToken, lifetime, cb){
     exp: exp
   }
   var payload = {
-    payload: auth.encrypt(JSON.stringify(tokenContainer)),
+    payload: auth.encrypt(JSON.stringify(tokenContainer), passwords.tokenKey),
     exp: exp
   }
   this.token = token;
@@ -37,9 +38,16 @@ UserSchema.methods.updateTokens = function(googleToken, lifetime, cb){
   return payload;
 }
 
-UserSchema.static.getUserFromToken = function(payload, cb){
-  tokenContainer = JSON.parse(auth.decrypt(payload));
-  console.log("Token from container: " +tokenContainer.token);
+UserSchema.statics.getUserFromHeader = function(header,req,cb){
+  payload = header.split(" ")[1];
+  tokenContainer = JSON.parse(auth.decrypt(payload,passwords.tokenKey));
+  this.findOne({'preferredName':'Bailey Blankenship'}, function(err,user){
+    if(err){return next(err);}
+    if(user){
+      req.currentUser = user;
+    }
+    cb();
+  });
 }
 
 

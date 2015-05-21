@@ -19,11 +19,11 @@ angular.module('mentorship')
         url: '/dashboard',
         templateUrl: 'pages/dashboard',
         controller: 'DashCtrl',
-        /*resolve:{
+        resolve:{
           mePromise: ['auth', function(auth){
             return auth.getMe();
           }]
-        },*/
+        },
         onEnter: ['auth', '$state', function(auth, $state){
           if(!auth.loggedIn){
             $state.go('account');
