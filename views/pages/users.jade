@@ -1,8 +1,21 @@
 md-content(layout="row" layout-align="center")
   md-card(flex-gt-md="60" flex-md="80" flex-sm="95")
+    md-toolbar
+      .md-toolbar-tools
+        md-button.md-icon-button(aria-label="Sort")
+          md-tooltip Sort
+          md-icon(md-svg-icon="content:sort")
+        md-button.md-icon-button(aria-label="Filter")
+          md-tooltip Filter
+          md-icon(md-svg-icon="content:filter_list")
+        span(flex)
+        md-button.md-icon-button(aria-label="Import")
+          md-tooltip Import from Drive
+          md-icon(md-svg-icon="file:cloud_download")
     md-list
       md-list-item(ng-repeat="user in users")
-          img.md-avatar(ng-src="{{user.image}}" alt="{{user.preferredName}}")
-          p {{user.preferredName}} | {{user.googleId}}
-          md-button.md-icon-button.md-warn(aria-label="Remove {{user.preferredName}}")
-            md-icon(md-svg-icon="content:remove_circle" ng-click="removeUser(user)")
+        img.md-avatar(ng-src="{{user.image}}" alt="{{user.preferredName}}")
+        p {{user.preferredName}}
+        md-button.md-icon-button.md-warn(aria-label="Remove {{user.preferredName}}")
+          md-icon(md-svg-icon="content:remove_circle" ng-click="removeUser(user)")
+        

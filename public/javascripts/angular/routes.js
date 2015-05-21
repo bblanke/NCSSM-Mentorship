@@ -19,6 +19,11 @@ angular.module('mentorship')
         url: '/dashboard',
         templateUrl: 'pages/dashboard',
         controller: 'DashCtrl',
+        /*resolve:{
+          mePromise: ['auth', function(auth){
+            return auth.getMe();
+          }]
+        },*/
         onEnter: ['auth', '$state', function(auth, $state){
           if(!auth.loggedIn){
             $state.go('account');
@@ -74,6 +79,16 @@ angular.module('mentorship')
         url: '/setup',
         templateUrl: 'pages/setup',
         controller: 'SetupCtrl',
+        onEnter: ['auth', '$state', function(auth, $state){
+          if(!auth.loggedIn){
+            $state.go('account');
+          }
+        }]
+      })
+      .state('dashboard.import', {
+        url: '/import',
+        templateUrl: 'pages/import',
+        controller: 'ImportCtrl',
         onEnter: ['auth', '$state', function(auth, $state){
           if(!auth.loggedIn){
             $state.go('account');

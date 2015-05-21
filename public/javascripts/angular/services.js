@@ -26,12 +26,19 @@ angular.module('mentorship')
     var auth = {
       loggedIn: false,
       token: "",
-      tokenExp: ""
+      tokenExp: "",
     };
+    auth.getMe = function(){
+      $http.get('/users/me').success(function(data){
+        console.log('me: '+data);
+        return auth.me = data;
+      });
+    }
     auth.initializeToken = function(){
       //check to see if we have a valid token stored. if so, load it up and direct us to dashboard
       console.log('checking token');
       var localToken = $window.localStorage['mentorship-authPackage'];
+      console.log("We have token: " + localToken);
       var authPackage;
       var now = new Date();
       if(localToken !== undefined){
@@ -61,7 +68,9 @@ angular.module('mentorship')
     auth.setToken = function(authPackage){
       //set our token, store it in case we quit, and redirect us to the dashboard
       //should only be called if we don't already have a token
+      console.log('the auth package is: '+JSON.stringify(authPackage));
       $window.localStorage['mentorship-authPackage'] = JSON.stringify(authPackage);
+      console.log("Just set token: "+ $window.localStorage['mentorship-authPackage']);
       loadToken(authPackage);
       $state.go('dashboard');
     }
@@ -73,6 +82,7 @@ angular.module('mentorship')
       $window.location = '/';
     }
     var loadToken = function(authPackage){
+      console.log(authPackage);
       auth.token = authPackage.payload;
       auth.tokenExp = authPackage.exp;
       $http.defaults.headers.common.Authorization = "Bearer "+authPackage.payload;

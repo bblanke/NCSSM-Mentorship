@@ -18,6 +18,8 @@ router.get('/account', function(req, res, next) {
   res.render('pages/mentors');
 }).get('/setup', function(req,res,next){
   res.render('pages/setup');
+}).get('/import', function(req,res,next){
+  res.render('pages/import');
 });
 
 module.exports = router;

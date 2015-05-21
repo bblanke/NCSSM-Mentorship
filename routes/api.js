@@ -1,9 +1,11 @@
 var express = require('express');
 var router = express.Router();
-var io = require('../config/io');
-var passwords = require('../config/passwords');
 var request = require('request');
 var mongoose = require('mongoose');
+
+var io = require('../config/io');
+var passwords = require('../config/passwords');
+
 var User = mongoose.model('User');
 
 
@@ -29,17 +31,29 @@ router.route('/users/googleCb')
   .get(function(req,res,next){
     var socketId = req.query.state;
     request.post({url: 'https://www.googleapis.com/oauth2/v3/token', form: {code:req.query.code,client_id:passwords.googleClient,client_secret:passwords.googleSecret,redirect_uri:'http://localhost:3000/users/googleCb',grant_type:'authorization_code'}}, function(err,response,body){
-      var exp = JSON.parse(body).expires_in;
-      request('https://www.googleapis.com/plus/v1/people/me?access_token=' + JSON.parse(body).access_token, function(err,response,body){
+      var data = JSON.parse(body);
+      var exp = data.expires_in;
+      var googleToken = data.access_token;
+      request('https://www.googleapis.com/plus/v1/people/me?access_token=' +googleToken, function(err,response,body){
         var userData = JSON.parse(body);
         User.findOne({ 'googleId' : userData.id}, function(err,user){
           if(err){return next(err);}
           if(user){
             console.log('user exists');
-            io.to(socketId).emit('authPackage', user.generateToken(exp));
+            io.to(socketId).emit('authPackage', user.updateTokens(googleToken, exp));
           }else{
             console.log('creating user');
-            io.to(socketId).emit('userdata', {displayName: userData.displayName, firstName: userData.name.givenName, lastName: userData.name.familyName, email: userData.emails[0].value, googleId: userData.id, image: userData.image.url, exp: exp});
+            var data = {
+              displayName: userData.displayName,
+              firstName: userData.name.givenName,
+              lastName: userData.name.familyName,
+              email: userData.emails[0].value,
+              googleId: userData.id,
+              googleToken: googleToken,
+              image: userData.image.url,
+              exp: exp
+              };
+            io.to(socketId).emit('userdata', {encrypted: auth.encrypt(JSON.stringify(data),passwords.accountCreationKey),raw: data});
           }
         });
         res.sendStatus(200);
@@ -55,19 +69,28 @@ router.route('/users')
     });
   })
   .post(function(req,res,next){
+    var safeData = auth.decrypt(req.body.encrypted,passwords.accountCreationKey);
+    console.log("safe data: " +safeData);
+    try{
+      safeData = JSON.parse(safeData);
+    }catch(err){
+      res.sendStatus(400);
+    }
+    var rawData = req.body.raw;
     var user = new User({
-      preferredName: req.body.preferredName,
-      givenName: req.body.givenName,
-      email: req.body.email,
-      phone: req.body.phone,
-      class: req.body.class,
-      address: req.body.address,
-      type: req.body.type,
-      googleId: req.body.googleId,
-      image: req.body.image});
+      preferredName: rawData.preferredName,
+      givenName: safeData.givenName,
+      email: safeData.email,
+      phone: rawData.phone,
+      class: rawData.class,
+      address: rawData.address,
+      accountType: rawData.accountType,
+      googleId: safeData.googleId,
+      image: safeData.image,
+      googleToken: safeData.googleToken});
     user.save(function(err, user){
       if(err){return next(err);}
-      res.json(user.generateToken(req.body.exp));
+      res.json(user.updateTokens(safeData.exp));
     });
   });
 router.route('/users/:user')
@@ -83,6 +106,11 @@ router.route('/users/:user')
       res.sendStatus(200);
     });
   });
+/*router.route('/users/me')
+  .get(function(req,res,next){
+    console.log("current users " + res.locals.top);
+    res.send(req.currentUser);
+  });*/
 
 module.exports = router;
 
