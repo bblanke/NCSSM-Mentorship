@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var crypto = require('crypto');
-var passwords = require('../config/passwords.js');
+var passwords = require('../config/passwords');
+var auth = require('../config/auth');
 
 var UserSchema = new mongoose.Schema({
   givenName: String,
@@ -16,9 +17,8 @@ var UserSchema = new mongoose.Schema({
   image: String
 });
 
-UserSchema.methods.generateToken = function(lifetime, cb){
+UserSchema.methods.generateTokens = function(googleToken, lifetime, cb){
   var token = crypto.randomBytes(48).toString('hex');
-  var cipher = crypto.createCipher('aes-256-cbc', passwords.secretKey);
   //lifetime is in seconds
   var now = new Date();
   var exp = now.getTime() + ((lifetime-60) * 1000);
@@ -27,10 +27,11 @@ UserSchema.methods.generateToken = function(lifetime, cb){
     exp: exp
   }
   var payload = {
-    payload: cipher.update(JSON.stringify(tokenContainer), 'utf8', 'base64') + cipher.final('base64'),
+    payload: auth.encrypt(JSON.stringify(tokenContainer)),
     exp: exp
   }
   this.token = token;
+  this.googleToken = token;
   this.save(cb);
   return payload;
 }
