@@ -27,10 +27,12 @@ angular.module('mentorship')
       loggedIn: false,
       token: "",
       tokenExp: "",
+      me: null,
+      socketID: ""
     };
     auth.getMe = function(){
       return $http.get('/users/me').success(function(data){
-        console.log('me: '+JSON.stringify(data));
+        auth.me = data;
       });
     }
     auth.initializeToken = function(){
@@ -48,7 +50,7 @@ angular.module('mentorship')
         loadToken(authPackage);
         return true;
       }else{
-        console.log('no token found');
+        console.log('no token or token out of date');
         return false;
       }
     }
@@ -84,7 +86,7 @@ angular.module('mentorship')
       console.log(authPackage);
       auth.token = authPackage.payload;
       auth.tokenExp = authPackage.exp;
-      $http.defaults.headers.common.Authorization = "Bearer "+authPackage.payload;
+      //$http.defaults.headers.common.Authorization = "Bearer "+authPackage.payload;
       auth.loggedIn = true;
       console.log('user logged in');
     }

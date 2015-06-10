@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
 
 var io = require('../config/io');
 var passwords = require('../config/passwords');
+var auth = require('../config/auth');
 
 var User = mongoose.model('User');
 
@@ -29,7 +30,7 @@ router.get('/', function(req, res, next) {
 
 router.route('/users/googleCb')
   .get(function(req,res,next){
-    var socketId = req.query.state;
+    var socketID = req.query.state;
     request.post({url: 'https://www.googleapis.com/oauth2/v3/token', form: {code:req.query.code,client_id:passwords.googleClient,client_secret:passwords.googleSecret,redirect_uri:'http://localhost:3000/users/googleCb',grant_type:'authorization_code'}}, function(err,response,body){
       var data = JSON.parse(body);
       var exp = data.expires_in;
@@ -40,7 +41,7 @@ router.route('/users/googleCb')
           if(err){return next(err);}
           if(user){
             console.log('user exists');
-            io.to(socketId).emit('authPackage', user.updateTokens(googleToken, exp));
+            io.to(socketID).emit('authPackage', user.updateTokens(googleToken, exp));
           }else{
             console.log('creating user');
             var data = {
@@ -53,7 +54,7 @@ router.route('/users/googleCb')
               image: userData.image.url,
               exp: exp
               };
-            io.to(socketId).emit('userdata', {encrypted: auth.encrypt(JSON.stringify(data),passwords.accountCreationKey),raw: data});
+            io.to(socketID).emit('userdata', {encrypted: auth.encrypt(JSON.stringify(data),passwords.accountCreationKey),raw: data});
           }
         });
         res.sendStatus(200);
@@ -110,6 +111,14 @@ router.route('/users/me')
   .get(function(req,res,next){
     console.log("current user: " + req.currentUser);
     res.send(req.currentUser);
+  });
+
+router.route('/import')
+  .get(function(req,res,next){ //basically a patchthrough to download csv of spreadsheet because CORS blocks client from downloading it
+    console.log(req.query.resource_url);
+    request.get(req.query.resource_url,{'auth':{'bearer':req.currentUser.googleToken}}, function(err,response,body){
+        res.send(body);
+    });
   });
 
 module.exports = router;

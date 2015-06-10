@@ -1,1 +1,1 @@
-angular.module('mentorship',['ui.router', 'ngMaterial', 'ngMask', 'ngMessages']);
+angular.module('mentorship',['ui.router', 'ngMaterial', 'ngMask', 'ngMessages', 'ngPapaParse']);

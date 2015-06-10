@@ -20,7 +20,6 @@ var UserSchema = new mongoose.Schema({
 
 
 UserSchema.methods.updateTokens = function(googleToken, lifetime, cb){
-  console.log('see, this shit works');
   var token = crypto.randomBytes(48).toString('hex');
   //lifetime is in seconds
   var now = new Date();
@@ -36,6 +35,7 @@ UserSchema.methods.updateTokens = function(googleToken, lifetime, cb){
   this.token = token;
   this.googleToken = googleToken;
   this.save(cb);
+  console.log('made payload');
   return payload;
 }
 

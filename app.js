@@ -26,8 +26,9 @@ app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
+
+//set headers
 app.use(function(req,res,next){
-  console.log("Headers: "+req.headers['authorization']);
   var authHeader = req.headers['authorization'];
   if(authHeader !== undefined){
     User.getUserFromHeader(authHeader, req, function(){
