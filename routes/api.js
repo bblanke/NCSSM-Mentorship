@@ -28,7 +28,7 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.route('/users/googleCb')
+router.route('/users/googleCB')
   .get(function(req,res,next){
     var socketID = req.query.state;
     request.post({url: 'https://www.googleapis.com/oauth2/v3/token', form: {code:req.query.code,client_id:passwords.googleClient,client_secret:passwords.googleSecret,redirect_uri:'http://localhost:3000/users/googleCb',grant_type:'authorization_code'}}, function(err,response,body){
@@ -71,7 +71,6 @@ router.route('/users')
   })
   .post(function(req,res,next){
     var safeData = auth.decrypt(req.body.encrypted,passwords.accountCreationKey);
-    console.log("safe data: " +safeData);
     try{
       safeData = JSON.parse(safeData);
     }catch(err){
@@ -101,7 +100,7 @@ router.route('/users/:user')
       res.sendStatus(200);
     });
   })
-  .put(function(req,res,next){
+  .put(function(req,res,next){//need to make sure only admins can set and remove admins
     req.user.update(req.body, function(err,user){
       if(err){return next(err);}
       res.sendStatus(200);
@@ -119,6 +118,13 @@ router.route('/import')
     request.get(req.query.resource_url,{'auth':{'bearer':req.currentUser.googleToken}}, function(err,response,body){
         res.send(body);
     });
+  })
+  .post(function(req,res,next){
+    res.send("Good.");//now I have to figure this shit out.
+  })
+router.route('/models')
+  .get(function(req,res,next){
+    res.send(mongoose.modelNames());
   });
 
 module.exports = router;

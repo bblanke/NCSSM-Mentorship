@@ -1,18 +1,27 @@
-md-content(layout='row' layout-align='center')
+md-content(layout="row" layout-align="center")
   md-card(flex-gt-md="60" flex-md="80" flex-sm="95")
     md-toolbar
       .md-toolbar-tools
         h2
-          span Please Select Spreadsheet
-    md-content.md-padding(layout='row' layout-align='center' ng-show="dataLoading")
+          span {{cardTitle}}
+        span(flex)
+        md-button(ng-show="headerDataRetrieved" ng-click="importSpreadsheet()") Import Sheet
+    md-content.md-padding(layout="row" layout-align="center" ng-show="dataLoading")
       md-progress-circular.md-accent(md-mode="indeterminate")
     md-list(ng-show="sheetDataRetrieved")
       md-list-item(ng-repeat="spreadsheet in spreadsheets")
         p {{spreadsheet.title}} | {{spreadsheet.ownerNames[0]}}
         md-button.md-icon-button.md-primary(aria-label="Import {{spreadsheet.title}}")
           md-icon(md-svg-icon="navigation:arrow_forward" ng-click="parseSpreadsheet(spreadsheet.id)")
+    md-content(layout="row" layout-align="center" ng-show="headerDataRetrieved" layout-padding)
+      md-select(placeholder="Model" ng-model="model" flex)
+        md-option(ng-value="model" ng-repeat="model in models") {{model}}
+      md-select(placeholder="Key" ng-model="key" flex)
+        md-option(ng-value="column.name" ng-repeat="column in columns") {{column.name}}
     md-list(ng-show="headerDataRetrieved")
       md-list-item(ng-repeat="column in columns")
-        p {{column}}
-        md-checkbox.md-secondary
-      
+        md-checkbox(ng-model="column.import")
+        p {{column.name}}
+        md-input-container
+          label Field Name
+          input(ng-model="column.fieldName")

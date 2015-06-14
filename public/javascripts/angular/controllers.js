@@ -89,9 +89,9 @@ angular.module('mentorship')
   .controller('MailCtrl', ['$scope', function($scope){
     $scope.$parent.pageTitle = "Mail";
   }])
-  .controller('ImportCtrl', ['$scope','$http','auth','$location','papa', function($scope,$http,auth,$location,papa){
+  .controller('ImportCtrl', ['$scope','$http','papa','$mdDialog','$state', function($scope,$http,papa,$mdDialog,$state){
     $scope.$parent.pageTitle = "Import Data";
-    $scope.toolbarTitle = 'Select Spreadsheet';
+    $scope.cardTitle = 'Select Spreadsheet';
     $scope.spreadsheets = [];
     $scope.dataLoading = true;
     $scope.sheetDataRetrieved = false;
@@ -107,14 +107,60 @@ angular.module('mentorship')
     $scope.parseSpreadsheet = function(sheetID){
       $scope.sheetDataRetrieved = false;
       $scope.dataLoading = true;
-      $http.get('https://www.googleapis.com/drive/v2/files/'+sheetID).success(function(data){
-        console.log("got the url: " +data.exportLinks['text/csv']);
-        $http.get('/import', {params:{resource_url: data.exportLinks['text/csv']}}).success(function(data){//fix get
+      $http.get('/models').success(function(data){//get the models before we do anything else
+        $scope.models = data;
+      });
+      $http.get('https://www.googleapis.com/drive/v2/files/'+sheetID).success(function(data){//get the url
+        $http.get('/import', {params:{resource_url: data.exportLinks['text/csv']}}).success(function(data){//get the csv file
+          sheet = papa.parse(data, {header: true});
+          if(sheet.data.length === 0){
+            $mdDialog.show(
+              $mdDialog.alert()
+                .parent(angular.element(document.body))
+                .title('Spreadsheet Error')
+                .content('The selected spreadsheet is not valid for import. Please make sure the sheet holds the responses to a Google Form and that there is at least one response (2 rows of data).')
+                .ariaLabel('Spreadsheet Error Dialog')
+                .ok('Sounds good.')
+            );
+            $scope.sheetDataRetrieved = true;
+          }else{
+            $scope.cardTitle = 'Import Settings'
+            $scope.headerDataRetrieved = true;
+            $scope.columns = [];
+            $scope.model;
+            $scope.key;
+            angular.forEach(Object.keys(sheet.data[0]), function(key,index){
+              $scope.columns.push({name: key,import: false,fieldName: ''});
+            });
+          }
           $scope.dataLoading = false;
-          $scope.headerDataRetrieved = true;
-          sheet = papa.parse(data, {header: true}); //put error messaging in if this is undefined.
-          $scope.columns = Object.keys(sheet.data[0]);
         });
+      });
+    }
+    $scope.importSpreadsheet = function(){
+      var sheetData = {
+        model: $scope.model,
+        key: $scope.key,
+        columns: {}
+      }
+      angular.forEach($scope.columns, function(column, index){
+        if(column.import === true){
+          sheetData.columns[column.name] = column.fieldName;
+        }
+      });
+      $scope.dataLoading = true;
+      $scope.headerDataRetrieved = false;
+      $http.post('/import', sheetData).success(function(data){
+        $scope.dataLoading = false;
+        $mdDialog.show(
+          $mdDialog.alert()
+            .parent(angular.element(document.body))
+            .title('Success')
+            .content('Data was successfully imported')
+            .ariaLabel('Success message')
+            .ok('Nice.')
+        );
+        $state.go('dashboard');
       });
     }
   }]);

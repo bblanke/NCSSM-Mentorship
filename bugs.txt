@@ -1,3 +1,3 @@
 known bugs so far:
 
-in the import controller, PapaParse doesn't like sheets that don't have data i.e. a form response sheet that only has headers in it. I think you need at least 2 rows of data for csv parsing to work. Not that big of a deal, but I should put some error messaging in there.
+(fixed with error messaging) in the import controller, PapaParse doesn't like sheets that don't have data i.e. a form response sheet that only has headers in it. I think you need at least 2 rows of data for csv parsing to work. Not that big of a deal, but I should put some error messaging in there.
