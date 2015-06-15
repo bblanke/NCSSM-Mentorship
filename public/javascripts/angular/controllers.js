@@ -22,7 +22,7 @@ angular.module('mentorship')
       });
     }
     $scope.openGoogle = function(){
-      authWindow = window.open('https://accounts.google.com/o/oauth2/auth?scope=email%20profile%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fspreadsheets.google.com%2Ffeeds&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fusers%2FgoogleCb&response_type=code&client_id=' + clientId + '&approval_prompt=auto&state=' + auth.socketID);
+      authWindow = window.open('https://accounts.google.com/o/oauth2/auth?scope=email%20profile%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fspreadsheets.google.com%2Ffeeds&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fusers%2FgoogleCB&response_type=code&client_id=' + clientId + '&approval_prompt=auto&state=' + auth.socketID);
     };
     socket.on('socketcreds', function(data){
       auth.socketID = data;

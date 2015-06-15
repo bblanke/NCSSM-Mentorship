@@ -31,7 +31,7 @@ router.get('/', function(req, res, next) {
 router.route('/users/googleCB')
   .get(function(req,res,next){
     var socketID = req.query.state;
-    request.post({url: 'https://www.googleapis.com/oauth2/v3/token', form: {code:req.query.code,client_id:passwords.googleClient,client_secret:passwords.googleSecret,redirect_uri:'http://localhost:3000/users/googleCb',grant_type:'authorization_code'}}, function(err,response,body){
+    request.post({url: 'https://www.googleapis.com/oauth2/v3/token', form: {code:req.query.code,client_id:passwords.googleClient,client_secret:passwords.googleSecret,redirect_uri:'http://localhost:3000/users/googleCB',grant_type:'authorization_code'}}, function(err,response,body){
       var data = JSON.parse(body);
       var exp = data.expires_in;
       var googleToken = data.access_token;
@@ -120,7 +120,9 @@ router.route('/import')
     });
   })
   .post(function(req,res,next){
-    res.send("Good.");//now I have to figure this shit out.
+    var sheetOptions = req.body;
+    var model = mongoose.model(sheetOptions.model);
+    res.send("Good.");
   })
 router.route('/models')
   .get(function(req,res,next){
