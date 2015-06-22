@@ -9,6 +9,8 @@ var auth = require('../config/auth');
 
 var User = mongoose.model('User');
 
+var parse = require('csv-parse');
+
 
 router.param('user', function(req, res, next, id) {
   var query = User.findById(id);
@@ -108,13 +110,11 @@ router.route('/users/:user')
   });
 router.route('/users/me')
   .get(function(req,res,next){
-    console.log("current user: " + req.currentUser);
     res.send(req.currentUser);
   });
 
 router.route('/import')
   .get(function(req,res,next){ //basically a patchthrough to download csv of spreadsheet because CORS blocks client from downloading it
-    console.log(req.query.resource_url);
     request.get(req.query.resource_url,{'auth':{'bearer':req.currentUser.googleToken}}, function(err,response,body){
         res.send(body);
     });
@@ -122,15 +122,87 @@ router.route('/import')
   .post(function(req,res,next){
     var sheetOptions = req.body;
     var model = mongoose.model(sheetOptions.model);
-    res.send("Good.");
-  })
+    request.get(sheetOptions.url,{'auth':{'bearer':req.currentUser.googleToken}}, function(err,response,body){
+      if(err){return next(err);}
+      //first add to schema
+      //then sort through data and find the record by the key
+        //if exists, add to record
+        //if not, create record based on supplied data
+
+      //This adds new columns/keys/properties to the schema
+      var schema = model.schema;
+      for(var column in sheetOptions.columns){
+        var keyName = sheetOptions.columns[column];
+        if(!(Object.keys(schema.tree).indexOf(keyName) > -1)){
+          schema.add({keyName:'string'});
+        }
+      }
+
+      parse(body,function(err,data){
+        if(err){return next(err);}
+        var sKeyIndex = data[0].indexOf(sheetOptions.sheetKey);
+        var mKey = sheetOptions.modelKey;
+
+        function asyncLoop(i,callback){ //fancy business to work with async in loops
+          if(i<data.length){
+            var sKey = data[i][sKeyIndex];
+            model.find().where(mKey,sKey).exec(function(err,records){
+              if(err){return next(err);}
+              if(records.length>0){
+                var record = records[0];
+                var columnIndexes = Object.keys(sheetOptions.columns);
+                for(a=0; a<columnIndexes.length; a++){
+                  var columnIndex = columnIndexes[a];
+                  var fieldName = sheetOptions.columns[columnIndex];
+                  var fieldValue = data[i][columnIndex];
+                  record.set('class',fieldValue);
+                }
+                console.log("record:");
+                console.log(record);
+              }else{
+                console.log("record "+ sKey +"does not exist");
+              }
+              asyncLoop(i+1,callback);
+            });
+          }else{
+            callback();
+          }
+        }
+        asyncLoop(1,function(){
+          model.find({}, function(err,records){
+            res.send('good');
+          });
+        });
+            /*
+            var columnIndexes = Object.keys(sheetOptions.columns);
+            for(i=0; i<columnIndexes.length; i++){
+
+            }*/
+      });
+      /*
+      var keysArray = Object.keys(columns);
+      for(i = 0; i < keysArray.length; i++){
+        var keyName = columns[keysArray[i]];
+        schema.add({keyName:'string'}); //add columns to schema
+      }
+      parse(body,function(err,data){
+        for(i = 1; i < data.length; i++){//start at 1 to skip headers
+          model.findOne(:data[i][sheetOptions.key],function(err,user){
+            console.log(user);
+          });
+        }
+      });*/
+    });
+  });
 router.route('/models')
   .get(function(req,res,next){
-    res.send(mongoose.modelNames());
+    var names = mongoose.modelNames();
+    var models = {};
+    for(i = 0; i < names.length; i++){
+      var name = names[i];
+      models[name] = Object.keys(mongoose.model(name).schema.paths);
+    }
+    res.send(models); //what the fuck is wrong with this. fix this so we can send model data. then use model data to dynamically list attributes for the selected model and send them along as the 'modelKey'
   });
 
 module.exports = router;
-
-
-//Store refresh token
-//create job manager to get new token when it expires

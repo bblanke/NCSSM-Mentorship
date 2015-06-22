@@ -8,20 +8,25 @@ md-content(layout="row" layout-align="center")
         md-button(ng-show="headerDataRetrieved" ng-click="importSpreadsheet()") Import Sheet
     md-content.md-padding(layout="row" layout-align="center" ng-show="dataLoading")
       md-progress-circular.md-accent(md-mode="indeterminate")
-    md-list(ng-show="sheetDataRetrieved")
-      md-list-item(ng-repeat="spreadsheet in spreadsheets")
-        p {{spreadsheet.title}} | {{spreadsheet.ownerNames[0]}}
-        md-button.md-icon-button.md-primary(aria-label="Import {{spreadsheet.title}}")
-          md-icon(md-svg-icon="navigation:arrow_forward" ng-click="parseSpreadsheet(spreadsheet.id)")
-    md-content(layout="row" layout-align="center" ng-show="headerDataRetrieved" layout-padding)
-      md-select(placeholder="Model" ng-model="model" flex)
-        md-option(ng-value="model" ng-repeat="model in models") {{model}}
-      md-select(placeholder="Key" ng-model="key" flex)
-        md-option(ng-value="column.name" ng-repeat="column in columns") {{column.name}}
-    md-list(ng-show="headerDataRetrieved")
-      md-list-item(ng-repeat="column in columns")
-        md-checkbox(ng-model="column.import")
-        p {{column.name}}
-        md-input-container
-          label Field Name
-          input(ng-model="column.fieldName")
+    md-content(ng-show="sheetDataRetrieved")
+      md-list(layout-padding)
+        md-list-item(ng-repeat="spreadsheet in spreadsheets")
+          p {{spreadsheet.title}} | {{spreadsheet.ownerNames[0]}}
+          md-button.md-icon-button.md-primary(aria-label="Import {{spreadsheet.title}}")
+            md-icon(md-svg-icon="navigation:arrow_forward" ng-click="parseSpreadsheet(spreadsheet.id)")
+    md-content(ng-show="headerDataRetrieved")
+      md-content(layout="row" layout-align="center" layout-padding)
+        md-select(placeholder="Model" ng-model="model")
+          md-option(ng-value="model" ng-repeat="model in models") {{model}}
+        md-select(placeholder="Model Key" ng-model="modelKey")
+          md-option(ng-value="key" ng-repeat="key in modelData[model]") {{key}}
+        md-select(placeholder="Sheet Key" ng-model="sheetKey")
+          md-option(ng-value="column.name" ng-repeat="column in columns") {{column.name}}
+      md-list(ng-show="sheetKey && modelKey && model")
+        md-list-item(ng-repeat="column in columns" ng-hide="sheetKey == column.name")
+          md-switch(ng-model="column.import")
+          p {{column.name}}
+          md-icon.md-warn(md-svg-icon="action:autorenew" ng-show="modelData[model].indexOf(column.fieldName) > -1")
+          md-input-container
+            label Name in Model
+            input(ng-model="column.fieldName")

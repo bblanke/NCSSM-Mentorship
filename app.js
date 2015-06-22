@@ -29,9 +29,12 @@ app.set('view engine', 'jade');
 
 //set headers
 app.use(function(req,res,next){
-  var authHeader = req.headers['authorization'];
-  if(authHeader !== undefined){
-    User.getUserFromHeader(authHeader, req, function(){
+  var headers = req.headers;
+  if(headers['authorization'] !== undefined){
+    User.getUserFromHeader(headers['authorization'], req, function(){
+      if(headers['x-socket'] !== undefined){ //have to nest this. if not, the next() in this function will be called before req.socket can be set. next() has to be a part of the callback of this function so that it isn't called until the user is found and attached to req object
+        req.socket = headers['x-socket'];
+      }
       next();
     });
   }else{
