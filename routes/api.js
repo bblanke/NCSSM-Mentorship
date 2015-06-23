@@ -167,13 +167,15 @@ router.route('/import')
                 doc.update(docData,{},function(err,object){ //update the record with our update data object
                   asyncLoop(i+1,callback);
                 });
-              }else{ //create a new record if none exists
-                docData[mKey] = sKey;
-                nModel.create(docData, function(err,doc){
-                  console.log("created doc: ");
-                  console.log(doc);
+              }else{ //create a new record if none exists, but only if we're allowed to
+                if(sheetOptions.createNew){
+                  docData[mKey] = sKey;
+                  nModel.create(docData, function(err,doc){
+                    asyncLoop(i+1,callback);
+                  });
+                }else{
                   asyncLoop(i+1,callback);
-                });
+                }
               }
             });
           }else{

@@ -15,7 +15,7 @@ md-content(layout="row" layout-align="center")
     md-list(layout-padding)
       md-list-item(ng-repeat="user in users")
         img.md-avatar(ng-src="{{user.image}}" alt="{{user.preferredName}}")
-        p {{user.preferredName}} | {{user.interHall}}
+        p {{user.preferredName}}
         md-button.md-icon-button.md-warn(aria-label="Remove {{user.preferredName}}")
           md-icon(md-svg-icon="content:remove_circle" ng-click="removeUser(user, $event)")
         

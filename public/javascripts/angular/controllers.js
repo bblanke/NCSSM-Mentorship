@@ -153,6 +153,7 @@ angular.module('mentorship')
         model: $scope.model,
         sheetKey: $scope.sheetKey,
         modelKey: $scope.modelKey,
+        createNew: $scope.createNew,
         columns: {}
       }
       angular.forEach($scope.columns, function(column, index){
@@ -160,10 +161,10 @@ angular.module('mentorship')
           sheetData.columns[$scope.columns.indexOf(column)] = column.fieldName;
         }
       });
-      //$scope.dataLoading = true;
-      //$scope.headerDataRetrieved = false;
+      $scope.dataLoading = true;
+      $scope.headerDataRetrieved = false;
       $http.post('/import', sheetData).success(function(data){
-        //$scope.dataLoading = false;
+        $scope.dataLoading = false;
         $mdDialog.show(
           $mdDialog.alert()
             .parent(angular.element(document.body))
@@ -172,7 +173,7 @@ angular.module('mentorship')
             .ariaLabel('Success message')
             .ok('Nice.')
         );
-        //$state.go('dashboard');
+        $state.go('dashboard');
       });
     }
     $scope.createDocWarning = function(checked){
