@@ -132,6 +132,7 @@ angular.module('mentorship')
           }else{
             $scope.cardTitle = 'Import Settings'
             $scope.headerDataRetrieved = true;
+            $scope.createNew = false;
             $scope.columns = []; //the columns of the spreadsheet that can be imported or used as keys
             $scope.model; //the model that the user wants to add data to
             $scope.models = Object.keys(modelData); //all app models to choose to add data to
@@ -173,5 +174,17 @@ angular.module('mentorship')
         );
         //$state.go('dashboard');
       });
+    }
+    $scope.createDocWarning = function(checked){
+      if(!checked){
+        $mdDialog.show(
+          $mdDialog.alert()
+            .parent(angular.element(document.body))
+            .title('Caution')
+            .content('Take caution when creating new documents from spreadsheets. Unless you collect comprehensive data in your spreadsheet, you may find that some features of the application behave oddly when interacting with your new documents. For instance, if you have a survey for users that collects email and favorite color, but nothing else, and there are users in the survey who are not registered with the system (so therefore new documents are created for them), important fields such as name or profilePicture will not be created with the new document, so when you do something that requires these fields, like viewing the list of all users, you will see odd results (like users without any names).')
+            .ariaLabel('Spreadsheet Import Warning')
+            .ok('Duly noted.')
+        );
+      }
     }
   }]);

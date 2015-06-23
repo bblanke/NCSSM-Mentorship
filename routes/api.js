@@ -121,7 +121,7 @@ router.route('/import')
   })
   .post(function(req,res,next){
     var sheetOptions = req.body;
-    var model = mongoose.model(sheetOptions.model);
+    var oModel = mongoose.model(sheetOptions.model);
     request.get(sheetOptions.url,{'auth':{'bearer':req.currentUser.googleToken}}, function(err,response,body){
       if(err){return next(err);}
       //first add to schema
@@ -130,13 +130,16 @@ router.route('/import')
         //if not, create record based on supplied data
 
       //This adds new columns/keys/properties to the schema
-      var schema = model.schema;
+      var schema = oModel.schema;
       for(var column in sheetOptions.columns){
         var keyName = sheetOptions.columns[column];
         if(!(Object.keys(schema.tree).indexOf(keyName) > -1)){
-          schema.add({keyName:'string'});
+          var formattedKey = {};
+          formattedKey[keyName] = 'string';
+          schema.add(formattedKey);
         }
       }
+      var nModel = mongoose.model(sheetOptions.model,schema);
 
       parse(body,function(err,data){
         if(err){return next(err);}
@@ -146,52 +149,43 @@ router.route('/import')
         function asyncLoop(i,callback){ //fancy business to work with async in loops
           if(i<data.length){
             var sKey = data[i][sKeyIndex];
-            model.find().where(mKey,sKey).exec(function(err,records){
+            nModel.find().where(mKey,sKey).exec(function(err,docs){
               if(err){return next(err);}
-              if(records.length>0){
-                var record = records[0];
-                var columnIndexes = Object.keys(sheetOptions.columns);
-                for(a=0; a<columnIndexes.length; a++){
-                  var columnIndex = columnIndexes[a];
-                  var fieldName = sheetOptions.columns[columnIndex];
-                  var fieldValue = data[i][columnIndex];
-                  record.set('class',fieldValue);
-                }
-                console.log("record:");
-                console.log(record);
-              }else{
-                console.log("record "+ sKey +"does not exist");
+
+              //get the data we want to use to update/create a record
+              var columnIndexes = Object.keys(sheetOptions.columns);
+              var docData = {};
+              for(a=0; a<columnIndexes.length; a++){ //for each column, add to our record data object
+                var columnIndex = columnIndexes[a];
+                var fieldName = sheetOptions.columns[columnIndex];
+                var fieldValue = data[i][columnIndex];
+                docData[fieldName] = fieldValue;
               }
-              asyncLoop(i+1,callback);
+
+              if(docs.length>0){ //if a record exists, update it
+                var doc = docs[0];
+                doc.update(docData,{},function(err,object){ //update the record with our update data object
+                  asyncLoop(i+1,callback);
+                });
+              }else{ //create a new record if none exists
+                docData[mKey] = sKey;
+                nModel.create(docData, function(err,doc){
+                  console.log("created doc: ");
+                  console.log(doc);
+                  asyncLoop(i+1,callback);
+                });
+              }
             });
           }else{
             callback();
           }
         }
         asyncLoop(1,function(){
-          model.find({}, function(err,records){
+          nModel.find({}, function(err,records){
             res.send('good');
           });
         });
-            /*
-            var columnIndexes = Object.keys(sheetOptions.columns);
-            for(i=0; i<columnIndexes.length; i++){
-
-            }*/
       });
-      /*
-      var keysArray = Object.keys(columns);
-      for(i = 0; i < keysArray.length; i++){
-        var keyName = columns[keysArray[i]];
-        schema.add({keyName:'string'}); //add columns to schema
-      }
-      parse(body,function(err,data){
-        for(i = 1; i < data.length; i++){//start at 1 to skip headers
-          model.findOne(:data[i][sheetOptions.key],function(err,user){
-            console.log(user);
-          });
-        }
-      });*/
     });
   });
 router.route('/models')
@@ -202,7 +196,7 @@ router.route('/models')
       var name = names[i];
       models[name] = Object.keys(mongoose.model(name).schema.paths);
     }
-    res.send(models); //what the fuck is wrong with this. fix this so we can send model data. then use model data to dynamically list attributes for the selected model and send them along as the 'modelKey'
+    res.send(models);
   });
 
 module.exports = router;
