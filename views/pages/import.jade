@@ -5,7 +5,9 @@ md-content(layout="row" layout-align="center")
         h2
           span {{cardTitle}}
         span(flex)
-        md-button(ng-show="headerDataRetrieved" ng-click="importSpreadsheet()") Import Sheet
+        md-button.md-icon-button(ng-show="headerDataRetrieved" ng-click="importSpreadsheet()" aria-label="Import Spreadsheet" ng-disabled="!(sheetKey && modelKey && model)")
+          md-tooltip Import Spreadsheet
+          md-icon(md-svg-icon="editor:publish")
     md-content.md-padding(layout="row" layout-align="center" ng-show="dataLoading")
       md-progress-circular.md-accent(md-mode="indeterminate")
     md-content(ng-show="sheetDataRetrieved")
@@ -17,16 +19,16 @@ md-content(layout="row" layout-align="center")
     md-content(ng-show="headerDataRetrieved")
       md-content(layout="row" layout-align="center" layout-padding)
         md-select(placeholder="Model" ng-model="model")
-          md-option(ng-value="model" ng-repeat="model in models") {{model}}
+          md-option(ng-value="model" ng-repeat="model in models") {{model.name}}
         md-select(placeholder="Model Key" ng-model="modelKey")
-          md-option(ng-value="key" ng-repeat="key in modelData[model]") {{key}}
+          md-option(ng-value="field" ng-repeat="field in model.fields") {{field}}
         md-select(placeholder="Sheet Key" ng-model="sheetKey")
           md-option(ng-value="column.name" ng-repeat="column in columns") {{column.name}}
       md-list(ng-show="sheetKey && modelKey && model")
         md-list-item(ng-repeat="column in columns" ng-hide="sheetKey == column.name")
           md-switch(ng-model="column.import")
           p {{column.name}}
-          md-icon.md-warn(md-svg-icon="action:autorenew" ng-show="modelData[model].indexOf(column.fieldName) > -1")
+          md-icon.md-warn(md-svg-icon="action:autorenew" ng-show="model.fields.indexOf(column.fieldName) > -1")
           md-input-container
             label Name in Model
             input(ng-model="column.fieldName")

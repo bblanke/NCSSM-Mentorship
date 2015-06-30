@@ -1,2 +1,20 @@
-.card
-  h1 Mail
+md-content(layout="row" layout-align="center")
+  md-card(flex-gt-md="60" flex-md="80" flex-sm="95")
+    md-toolbar
+      .md-toolbar-tools
+        h2
+          span {{cardTitle}}
+        span(flex)
+        md-button.md-icon-button(aria-label="New List" ng-show="showAddButton")
+          md-tooltip New List
+          md-icon(md-svg-icon="content:add_circle_outline")
+    md-content.md-padding(layout="row" layout-align="center" ng-show="dataLoading")
+      md-progress-circular.md-accent(md-mode="indeterminate")
+    md-content(ng-show="showListsCard")
+      md-list(layout-padding)
+        md-list-item(ng-repeat="list in lists")
+          p {{list.name}}
+          md-button.md-icon-button.md-primary(aria-label="Modify {{list.name}}")
+            md-icon(md-svg-icon="navigation:arrow_forward" ng-click="setupList(list)")
+    md-content(ng-show="showSettingsCard")
+      md-list(layout-padding)

@@ -88,8 +88,27 @@ angular.module('mentorship')
   .controller('AssignmentsCtrl', ['$scope', function($scope){
     $scope.$parent.pageTitle = "Assignments";
   }])
-  .controller('MailCtrl', ['$scope', function($scope){
-    $scope.$parent.pageTitle = "Mail";
+  .controller('MailCtrl', ['$scope','$http', function($scope,$http){
+    $scope.$parent.pageTitle = "MailChimp Lists";
+    $scope.cardTitle = 'Choose a List';
+    $scope.showAddButton = true;
+    $scope.showListsCard = true;
+    $scope.dataLoading = true;
+    $http.get('/mail/lists').success(function(data){
+      $scope.lists = data.lists;
+      $scope.dataLoading = false;
+    });
+    $scope.setupList = function(list){
+      $scope.selectedList = list;
+      $scope.cardTitle = 'List Import Settings';
+      $scope.showListsCard = false;
+      $scope.dataLoading = true;
+      $http.get('/models').success(function(data){ //BEFORE WE MOVE ON, CLEAN UP MODELDATA OBJECT
+        $scope.modelData = data;
+        $scope.showSettingsCard = true;
+        $scope.dataLoading = false;
+      });
+    };
   }])
   .controller('ImportCtrl', ['$scope','$http','papa','$mdDialog','$state', function($scope,$http,papa,$mdDialog,$state){
     $scope.$parent.pageTitle = "Import Data";
@@ -110,10 +129,8 @@ angular.module('mentorship')
     $scope.parseSpreadsheet = function(sheetID){
       $scope.sheetDataRetrieved = false;
       $scope.dataLoading = true;
-      var modelData;
       $http.get('/models').success(function(data){//get the models before we do anything else
-        modelData = data;
-        console.log(modelData);
+        $scope.models = data;
       });
       $http.get('https://www.googleapis.com/drive/v2/files/'+sheetID).success(function(data){//get the url
         sheetUrl = data.exportLinks['text/csv'];
@@ -135,12 +152,10 @@ angular.module('mentorship')
             $scope.createNew = false;
             $scope.columns = []; //the columns of the spreadsheet that can be imported or used as keys
             $scope.model; //the model that the user wants to add data to
-            $scope.models = Object.keys(modelData); //all app models to choose to add data to
             $scope.sheetKey; //the unique key on the sheet
             $scope.modelKey; //the unique key on the model
-            $scope.modelData = modelData; //all of the keys for each model (basically all you can choose from)
             angular.forEach(Object.keys(sheet.data[0]), function(key,index){
-              $scope.columns.push({name: key,import: false,fieldName: ''}); //////SOMETHING IS WRONG - the model keys aren't changing. this all feels very messy. there needs to be a way to make it cleaner. also I'm concerned that some of my data im sending as an index and some im sending as strings which makes server-side easier but makes code complex.
+              $scope.columns.push({name: key,import: false,fieldName: ''});
             });
           }
           $scope.dataLoading = false;
@@ -150,17 +165,18 @@ angular.module('mentorship')
     $scope.importSpreadsheet = function(){
       var sheetData = {
         url: sheetUrl,
-        model: $scope.model,
+        model: $scope.model.name,
         sheetKey: $scope.sheetKey,
         modelKey: $scope.modelKey,
         createNew: $scope.createNew,
-        columns: {}
+        columns: []
       }
       angular.forEach($scope.columns, function(column, index){
         if(column.import === true){
-          sheetData.columns[$scope.columns.indexOf(column)] = column.fieldName;
+          sheetData.columns.push({name: column.fieldName, position: $scope.columns.indexOf(column)});
         }
       });
+
       $scope.dataLoading = true;
       $scope.headerDataRetrieved = false;
       $http.post('/import', sheetData).success(function(data){

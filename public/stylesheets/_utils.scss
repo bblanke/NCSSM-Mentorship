@@ -9,3 +9,31 @@ a{
   width: 50px;
   border-radius: 25px;
 }
+
+.btn {
+  margin: 0 6px;
+  height: 48px;
+  min-width: 0;
+  line-height: 48px;
+  padding-left: 0;
+  padding-right: 0;
+  width: 48px;
+  border-radius: 50%;
+  border-style:none;
+  background-color: $primary-dark;
+  color: white;
+}
+
+.btn-toolbar{
+  background-color: $primary-dark;
+}
+
+i.fa{
+  margin: auto;
+  height: 24px;
+  width: 24px;
+}
+
+#toolbarWC, #toolbarCC{
+  display:none !important;
+}

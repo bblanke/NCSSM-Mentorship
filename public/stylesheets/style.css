@@ -1641,6 +1641,30 @@ a {
   width: 50px;
   border-radius: 25px; }
 
+.btn {
+  margin: 0 6px;
+  height: 48px;
+  min-width: 0;
+  line-height: 48px;
+  padding-left: 0;
+  padding-right: 0;
+  width: 48px;
+  border-radius: 50%;
+  border-style: none;
+  background-color: #00796B;
+  color: white; }
+
+.btn-toolbar {
+  background-color: #00796B; }
+
+i.fa {
+  margin: auto;
+  height: 24px;
+  width: 24px; }
+
+#toolbarWC, #toolbarCC {
+  display: none !important; }
+
 .m {
   margin: 8px !important; }
 

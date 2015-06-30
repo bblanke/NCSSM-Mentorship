@@ -24,7 +24,6 @@ router.param('user', function(req, res, next, id) {
   });
 });
 
-
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
@@ -121,7 +120,7 @@ router.route('/import')
   })
   .post(function(req,res,next){
     var sheetOptions = req.body;
-    var oModel = mongoose.model(sheetOptions.model);
+    var oModel = mongoose.model(sheetOptions.model); //old model object
     request.get(sheetOptions.url,{'auth':{'bearer':req.currentUser.googleToken}}, function(err,response,body){
       if(err){return next(err);}
       //first add to schema
@@ -131,34 +130,33 @@ router.route('/import')
 
       //This adds new columns/keys/properties to the schema
       var schema = oModel.schema;
-      for(var column in sheetOptions.columns){
-        var keyName = sheetOptions.columns[column];
-        if(!(Object.keys(schema.tree).indexOf(keyName) > -1)){
-          var formattedKey = {};
-          formattedKey[keyName] = 'string';
-          schema.add(formattedKey);
+      for(i = 0; i < sheetOptions.columns.length; i++){
+        var column = sheetOptions.columns[i];
+        if(!(Object.keys(schema.tree).indexOf(column.name) > -1)){
+          var fieldObject = {};
+          fieldObject[column.name] = 'string';
+          schema.add(fieldObject);
         }
       }
-      var nModel = mongoose.model(sheetOptions.model,schema);
+      var nModel = mongoose.model(sheetOptions.model,schema); //new model object with updated schematic
 
-      parse(body,function(err,data){
+      parse(body,function(err,sheetData){
         if(err){return next(err);}
-        var sKeyIndex = data[0].indexOf(sheetOptions.sheetKey);
-        var mKey = sheetOptions.modelKey;
+        var mKey = sheetOptions.modelKey; //the name of the model key
+        var sKeyIndex = sheetData[0].indexOf(sheetOptions.sheetKey); //the index (column) corresponding to data that serves as the sheet key. example value: 5 corresponding to column 5 in a spreadsheet that holds email addresses
 
         function asyncLoop(i,callback){ //fancy business to work with async in loops
-          if(i<data.length){
-            var sKey = data[i][sKeyIndex];
-            nModel.find().where(mKey,sKey).exec(function(err,docs){
+          if(i<sheetData.length){
+            var sKey = sheetData[i][sKeyIndex]; //get the actual value of the sheet key in the current record ex. we know that column 5 holds the sheet key, and in this row, column 5 equals blankenship15b@ncssm.edu
+            nModel.find().where(mKey,sKey).exec(function(err,docs){ //find models where the modelKey field (ex. username) matches the data supplied as the sheet key (ex. blankenship15b)
               if(err){return next(err);}
 
               //get the data we want to use to update/create a record
-              var columnIndexes = Object.keys(sheetOptions.columns);
               var docData = {};
-              for(a=0; a<columnIndexes.length; a++){ //for each column, add to our record data object
-                var columnIndex = columnIndexes[a];
-                var fieldName = sheetOptions.columns[columnIndex];
-                var fieldValue = data[i][columnIndex];
+              for(a = 0; a < sheetOptions.columns.length; a++){ //for each column, add to our record data object
+                var column = sheetOptions.columns[a];
+                var fieldName = column.name;
+                var fieldValue = sheetData[i][column.position];
                 docData[fieldName] = fieldValue;
               }
 
@@ -169,7 +167,7 @@ router.route('/import')
                 });
               }else{ //create a new record if none exists, but only if we're allowed to
                 if(sheetOptions.createNew){
-                  docData[mKey] = sKey;
+                  docData[mKey] = sKey; //basically the same as updating, except we add the key data (that would be used to match records when updating but since a new record is being created it needs to be created with it)
                   nModel.create(docData, function(err,doc){
                     asyncLoop(i+1,callback);
                   });
@@ -193,12 +191,19 @@ router.route('/import')
 router.route('/models')
   .get(function(req,res,next){
     var names = mongoose.modelNames();
-    var models = {};
+    var models = [];
     for(i = 0; i < names.length; i++){
       var name = names[i];
-      models[name] = Object.keys(mongoose.model(name).schema.paths);
+      models.push({name:name,fields:Object.keys(mongoose.model(name).schema.paths)});
     }
     res.send(models);
+  });
+
+router.route('/mail/lists')
+  .get(function(req,res,next){
+    request.get('https://us11.api.mailchimp.com/3.0/lists',{'auth':{'user':'butts','pass':passwords.mailChimp}}, function(err,response,body){
+      res.send(body);
+    });
   });
 
 module.exports = router;
