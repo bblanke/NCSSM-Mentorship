@@ -2,20 +2,51 @@ md-content(layout="row" layout-align="center")
   md-card(flex-gt-md="60" flex-md="80" flex-sm="95")
     md-toolbar
       .md-toolbar-tools
-        md-button.md-icon-button(aria-label="Sort")
-          md-tooltip Sort
-          md-icon(md-svg-icon="content:sort")
-        md-button.md-icon-button(aria-label="Filter")
-          md-tooltip Filter
-          md-icon(md-svg-icon="content:filter_list")
+        md-menu
+          md-button.md-icon-button(aria-label="Sort" ng-click="$mdOpenMenu()")
+            md-tooltip Sort
+            md-icon(md-menu-align-target md-svg-icon="content:sort")
+          md-menu-content(width="4")
+            md-menu-item(ng-repeat="field in userModel.fields")
+              md-button(ng-click="toggleSort(field)" ng-class="{'md-primary':sortField === field && !sortDirection, 'md-warn':sortField === field && sortDirection}") {{field}}
+        md-menu
+          md-button.md-icon-button(aria-label="Display Data" ng-click="$mdOpenMenu()")
+            md-tooltip Display Data
+            md-icon(md-menu-align-target md-svg-icon="action:view_list")
+          md-menu-content(width="4")
+            md-menu-item(ng-repeat="field in userModel.fields")
+              md-button(ng-click="display[field] = !display[field]" ng-class="{'md-primary': display[field]}") {{field}}
         span(flex)
-        md-button.md-icon-button(aria-label="Import")
-          md-tooltip Import from Drive
-          md-icon(md-svg-icon="file:cloud_download")
+        md-button.md-icon-button(aria-label="Search" ng-click="showSearch = !showSearch")
+          md-tooltip Search
+          md-icon(md-svg-icon="action:search")
+        md-menu(md-position-mode="target-right target")
+          md-button.md-icon-button(aria-label="Options" ng-click="$mdOpenMenu()")
+            md-tooltip Options
+            md-icon(md-svg-icon="navigation:more_vert")
+          md-menu-content(width="4")
+            md-menu-item
+              md-button(ng-click="selectAll()") Select All
+            md-menu-item
+              md-button(ng-click="deselectAll()") Deselect All
+            md-menu-divider
+            md-menu-item
+              md-button(ng-click="selectFiltered()") Select Filtered
+            md-menu-item
+              md-button(ng-click="deselectFiltered()") Deselect Filtered
+            md-menu-divider
+            md-menu-item
+              md-button.md-warn(ng-click="deleteSelected()") Delete Selected
+    md-toolbar.md-primary.md-hue-1(layout-padding layout="row" layout-wrap ng-show="showSearch")
+      md-input-container(md-no-float flex="50" ng-repeat="field in userModel.fields")
+        label {{field}}
+        input(type="text" ng-model="userFilter[field]")
     md-list(layout-padding)
-      md-list-item(ng-repeat="user in users")
+      md-list-item.md-3-line(ng-repeat="user in users | orderBy:sortField:sortDirection | filter:userFilter as filteredUsers")
         img.md-avatar(ng-src="{{user.image}}" alt="{{user.preferredName}}")
-        p {{user.preferredName}}
-        md-button.md-icon-button.md-warn(aria-label="Remove {{user.preferredName}}")
-          md-icon(md-svg-icon="content:remove_circle" ng-click="removeUser(user, $event)")
+        .md-list-item-text
+          h3 {{user.preferredName}}
+          p
+            span(ng-repeat="field in userModel.fields" ng-if="display[field]") {{user[field]}} 
+        md-checkbox(ng-model="user._selected")
         

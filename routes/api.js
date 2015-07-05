@@ -198,6 +198,16 @@ router.route('/models')
     }
     res.send(models);
   });
+router.route('/models/:name')
+  .get(function(req,res,next){
+    var name = req.params.name;
+    console.log(name);
+    var model = mongoose.model(name);
+    var resp = {};
+    resp.name = name;
+    resp.fields = Object.keys(model.schema.paths);
+    res.send(resp);
+  });
 
 router.route('/mail/lists')
   .get(function(req,res,next){

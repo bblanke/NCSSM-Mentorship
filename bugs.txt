@@ -2,3 +2,12 @@ known bugs so far:
 
 -(fixed with error messaging) in the import controller, PapaParse doesn't like sheets that don't have data i.e. a form response sheet that only has headers in it. I think you need at least 2 rows of data for csv parsing to work. Not that big of a deal, but I should put some error messaging in there.
 -Sometimes sign-in is funky. Although I like my own system, it may be better in the long run to switch to something maintained like passport
+
+- I need a way to alert the user when the session is expired and have them log back in. It's messy to be interrupted like it is now
+
+- The model changes are not being taken between terminations of the nodejs app. I need a way to serialize a model with its new fields and restore it whenever I restart the node app
+- it doesn't look like birthday is saving in the user model
+
+-I want the loading circle in the import thing to be determinate instead of indeterminate
+
+-make it do I can direct link to users view and stuff not just dashboard

@@ -66,21 +66,60 @@ angular.module('mentorship')
       auth.logOut();
     }
   }])
-  .controller('UsersCtrl', ['$scope','users', '$mdDialog', function($scope,users, $mdDialog){
+  .controller('UsersCtrl', ['$scope','users', '$mdDialog', '$http', function($scope,users,$mdDialog,$http){
     $scope.users = users;
-    $scope.$parent.pageTitle = "Users"
-    $scope.removeUser = function(user, ev){
+    $scope.showSearch = false;
+    $scope.$parent.pageTitle = "Users";
+    $scope.display = {};
+    $scope.sortField = 'givenName';
+    $scope.sortDirection = false;
+    $scope.userFilter = {};
+    $scope.filteredUsers = {};
+    $http.get('/models/User').success(function(data){
+      $scope.userModel = data;
+    });
+    $scope.toggleSort = function(field){
+      if(field === $scope.sortField){
+        $scope.sortDirection = !$scope.sortDirection;
+      }
+      $scope.sortField = field;
+    };
+    $scope.selectFiltered = function(){
+      angular.forEach($scope.filteredUsers, function(user){
+        user._selected = true;
+      });
+    };
+    $scope.deselectFiltered = function(){
+      angular.forEach($scope.filteredUsers, function(user){
+        user._selected = false;
+      });
+    };
+    $scope.selectAll = function(){
+      angular.forEach($scope.users, function(user){
+        user._selected = true;
+      });
+    };
+    $scope.deselectAll = function(){
+      angular.forEach($scope.users, function(user){
+        user._selected = false;
+      });
+    };
+    $scope.deleteSelected = function(ev){
       var confirm = $mdDialog.confirm()
-        .title('Are you sure you want to delete '+user.preferredName+' ?')
-        .content('Forever is a pretty long time.')
-        .ariaLabel('Delete user %s', user.preferredName)
-        .ok('Yep')
-        .cancel('Nope')
+        .title('Think carefully about this.')
+        .content('There are no takeback-sies. No undo-sies. The users and all of their data will be gone forever.')
+        .ariaLabel('Are you sure you want to delete users')
+        .ok("I've thought carefully. Let's do it.")
+        .cancel('Nope. Changed my mind.')
         .targetEvent(ev);
       $mdDialog.show(confirm).then(function(){
-        users.delete(user);
+        angular.forEach($scope.users, function(user){
+          if(user._selected){
+            users.delete(user);
+          }
+        }); //right here, I want to refersh the users view. right now though, I can't do that cause whenever you reload you just go back to the dashboard which blows
       });
-    }
+    };
   }])
   .controller('MentorsCtrl', ['$scope', function($scope){
     $scope.$parent.pageTitle = "Mentors";
@@ -90,11 +129,12 @@ angular.module('mentorship')
   }])
   .controller('MailCtrl', ['$scope','$http', function($scope,$http){
     $scope.$parent.pageTitle = "MailChimp Lists";
-    $scope.cardTitle = 'Choose a List';
+    $scope.cardTitle = 'Choose a MailChimp List';
     $scope.showAddButton = true;
     $scope.showListsCard = true;
     $scope.dataLoading = true;
     $http.get('/mail/lists').success(function(data){
+      console.log(data.lists);
       $scope.lists = data.lists;
       $scope.dataLoading = false;
     });
